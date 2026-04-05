@@ -5,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 const Insights = () => {
   const { transactions, loading } = useContext(AppContext);
 
-  if (loading) return <div>Loading insights...</div>;
+  if (loading) return <div className="p-8 text-center">Loading insights...</div>;
 
   // 1. Prepare data for Income vs Expense by Category
   const categoryStats = transactions.reduce((acc, curr) => {
@@ -38,27 +38,31 @@ const Insights = () => {
   const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in" style={{ padding: '20px' }}>
       <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontWeight: 600, fontSize: '1.5rem', marginBottom: '0.5rem' }}>Financial Insights</h2>
+        <h2 style={{ fontWeight: 600, fontSize: '1.8rem', marginBottom: '0.5rem' }}>Financial Insights</h2>
         <p style={{ color: 'var(--text-secondary)' }}>Advanced breakdown of your cash flow and categorized spending.</p>
       </div>
 
-      <div className="dashboard-grid">
+      <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.5rem' }}>
+        
         {/* Bar Chart: Income vs Expense by Category */}
-        <div className="col-span-12 glass-card" style={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
+        <div className="col-span-12 glass-card" style={{ gridColumn: 'span 12', padding: '1.5rem', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
           <h3 style={{ marginBottom: '1.5rem', fontWeight: 600 }}>Income vs Expense by Category</h3>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, width: '100%' }}>
             {barData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={barData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={barData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--card-border)" />
-                  <XAxis dataKey="name" stroke="var(--text-secondary)" />
-                  <YAxis stroke="var(--text-secondary)" />
-                  <Tooltip cursor={{ fill: 'var(--card-bg)' }} contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '0.5rem' }} />
-                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                  <Bar dataKey="income" name="Income" fill="var(--success)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="expense" name="Expense" fill="var(--danger)" radius={[4, 4, 0, 0]} />
+                  <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{fontSize: 12}} />
+                  <YAxis stroke="var(--text-secondary)" tick={{fontSize: 12}} />
+                  <Tooltip 
+                    cursor={{ fill: 'var(--card-bg)', opacity: 0.4 }} 
+                    contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '0.5rem' }} 
+                  />
+                  <Legend verticalAlign="top" height={36}/>
+                  <Bar dataKey="income" name="Income" fill="#10b981" radius={[4, 4, 0, 0]} barSize={30} />
+                  <Bar dataKey="expense" name="Expense" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={30} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -69,28 +73,31 @@ const Insights = () => {
           </div>
         </div>
 
-        {/* Advanced Pie Chart */}
-        <div className="col-span-6 glass-card" style={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
+        {/* Pie Chart: Expense Distribution */}
+        <div className="col-span-6 glass-card" style={{ gridColumn: 'span 6', padding: '1.5rem', height: '450px', display: 'flex', flexDirection: 'column' }}>
           <h3 style={{ marginBottom: '1rem', fontWeight: 600 }}>Expense Distribution</h3>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, width: '100%', position: 'relative' }}>
             {pieData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={pieData}
                     cx="50%"
-                    cy="50%"
-                    labelLine={true}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    cy="45%"
+                    innerRadius={70} // Makes it a Donut chart for cleaner look
                     outerRadius={100}
-                    fill="#8884d8"
+                    paddingAngle={5}
                     dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    labelLine={true}
                   >
                     {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '0.5rem', color: 'var(--text-primary)' }} itemStyle={{ color: 'var(--text-primary)' }} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '0.5rem' }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -101,21 +108,30 @@ const Insights = () => {
           </div>
         </div>
         
-        {/* Simple Summary Widget next to pie chart */}
-        <div className="col-span-6 glass-card" style={{ display: 'flex', flexDirection: 'column', height: '400px' }}>
-             <h3 style={{ marginBottom: '1.5rem', fontWeight: 600 }}>Top Spending Areas</h3>
-             <div style={{ flex: 1, overflowY: 'auto' }}>
-                 {pieData.sort((a,b) => b.value - a.value).map((item, i) => (
-                     <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', borderBottom: '1px solid var(--card-border)' }}>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: COLORS[i % COLORS.length] }}></div>
-                            <span style={{ fontWeight: 500 }}>{item.name}</span>
-                         </div>
-                         <strong style={{ color: 'var(--text-primary)' }}>${item.value.toLocaleString()}</strong>
-                     </div>
-                 ))}
-             </div>
+        {/* Top Spending Areas List */}
+        <div className="col-span-6 glass-card" style={{ gridColumn: 'span 6', padding: '1.5rem', height: '450px', display: 'flex', flexDirection: 'column' }}>
+          <h3 style={{ marginBottom: '1.5rem', fontWeight: 600 }}>Top Spending Areas</h3>
+          <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }}>
+            {pieData.sort((a, b) => b.value - a.value).map((item, i) => (
+              <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.85rem 0', borderBottom: '1px solid var(--card-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: COLORS[i % COLORS.length] }}></div>
+                  <span style={{ fontWeight: 500, fontSize: '0.95rem' }}>{item.name}</span>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 600 }}>${item.value.toLocaleString()}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        {((item.value / pieData.reduce((a, b) => a + b.value, 0)) * 100).toFixed(1)}% of total
+                    </div>
+                </div>
+              </div>
+            ))}
+            {pieData.length === 0 && (
+                <div style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-secondary)' }}>No expenses to display.</div>
+            )}
+          </div>
         </div>
+
       </div>
     </div>
   );
