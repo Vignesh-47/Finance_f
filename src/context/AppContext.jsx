@@ -40,7 +40,7 @@ export const AppProvider = ({ children }) => {
         
         let data = mockData;
         try {
-          const res = await fetch('http://localhost:5000/api/transactions');
+          const res = await fetch('https://finance-b.vercel.app/api/transactions');
           if (res.ok) {
             data = await res.json();
           } else {
